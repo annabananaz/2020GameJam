@@ -13,29 +13,33 @@ public class EntityHealth : MonoBehaviour
     public int getEntityCurrentHealth() { return entityCurrentHealth; }
 
     public float damageThreshold;
+    public bool isPlayer;
     private bool isDead;
 
     // Start is called before the first frame update
     void Start()
     {
-        if (entityName == null)
+        if (!isPlayer)
         {
-            entityName = transform.gameObject.name;
-        }
-        else
-        {
-            transform.gameObject.name = entityName;
-        }
+            if (entityName == null)
+            {
+                entityName = transform.gameObject.name;
+            }
+            else
+            {
+                transform.gameObject.name = entityName;
+            }
 
-        entityCurrentHealth = entityMaxHealth;
-        isDead = false;
+            entityCurrentHealth = entityMaxHealth;
+            isDead = false;
+        }
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (entityCurrentHealth <= 0 && !isDead)
+        if (entityCurrentHealth <= 0 && !isDead && !isPlayer)
         {
             entityCurrentHealth = 0;
             isDead = true;
@@ -45,27 +49,44 @@ public class EntityHealth : MonoBehaviour
 
     void OnCollisionEnter(Collision col)
     {
-        print("This " + this.transform.name + " has collided with Col " + col.transform.name);
         if (col.gameObject.GetComponent<Rigidbody>() != null)
         {
+            float kineticColDamage = KineticEnergy(col.gameObject.GetComponent<Rigidbody>());
+            print("KCE is " + kineticColDamage);
             if (col.gameObject.GetComponent<EntityHealth>() != null)
             {
-                float kineticColDamage = KineticEnergy(col.gameObject.GetComponent<Rigidbody>());
-                print("KineticColDamage is " + kineticColDamage);
+                
                 if (kineticColDamage > damageThreshold)
                 {
                     entityCurrentHealth = entityCurrentHealth - (Mathf.RoundToInt(kineticColDamage - damageThreshold));
-                    print(this.transform.name + " took physics damage and now is at " + entityCurrentHealth + " hp.");
+                }
+            }
+            else if(this.gameObject.GetComponent<EntityHealth>() != null)
+            {
+                if (isPlayer && PlayerSight.playerHoldingPosition.childCount > 0)
+                {
+                    if (kineticColDamage > damageThreshold)
+                    {
+                        print(" Player hit col object " + col.gameObject.name + " too hard for " + kineticColDamage + " vs " + damageThreshold + " has a rb");
+                        PlayerSight.DropObject(PlayerSight.hit.transform.gameObject);
+                    }
                 }
             }
         }
 
         float kineticDamage = KineticEnergy(this.transform.GetComponent<Rigidbody>());
-        print("KineticDamage is " + kineticDamage);
+        print("KE is " + kineticDamage);
         if (kineticDamage > damageThreshold)
         {
-            entityCurrentHealth = entityCurrentHealth - (Mathf.RoundToInt(kineticDamage - damageThreshold));
-            print(this.transform.name + " took physics damage and now is at " + entityCurrentHealth + " hp.");
+            if (!isPlayer)
+            {
+                entityCurrentHealth = entityCurrentHealth - (Mathf.RoundToInt(kineticDamage - damageThreshold));
+            }
+            else if (isPlayer && PlayerSight.playerHoldingPosition.childCount > 0)
+            {
+                print(" Player hit the ground too hard for " + kineticDamage + " vs " + damageThreshold + " has a rb");
+                PlayerSight.DropObject(PlayerSight.hit.transform.gameObject);
+            }
         }
     }
     // CALCULATE PHYSIC DAMAGE

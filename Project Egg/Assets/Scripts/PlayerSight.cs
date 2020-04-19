@@ -5,9 +5,10 @@ using UnityEngine;
 public class PlayerSight : MonoBehaviour
 {
     public GameObject FirstPersonCamera;
-    float sightDistance;                        //Raycast length
-    public static bool isHolding;               //Checks if the player is already holding an object
-    public Transform playerHoldingPosition;     //Transform where the object will be held
+    static float sightDistance;                                //Raycast length
+    public static bool isHolding;                       //Checks if the player is already holding an object
+    public static Transform playerHoldingPosition;      //Transform where the object will be held
+    public static RaycastHit hit;                       //Raycast hit
 
     // Start is called before the first frame update
     void Start()
@@ -22,7 +23,6 @@ public class PlayerSight : MonoBehaviour
     void Update()
     {
         Vector3 forward = FirstPersonCamera.transform.TransformDirection(Vector3.forward);                  //Uses the FirstPersonCamera as the Ray
-        RaycastHit hit;                                                                                     //Raycast hit
         Debug.DrawRay(FirstPersonCamera.transform.position, forward * sightDistance, Color.yellow);         //Debug draws the raycast lines
 
         if (Physics.Raycast(FirstPersonCamera.transform.position, forward, out hit, sightDistance))
@@ -74,7 +74,7 @@ public class PlayerSight : MonoBehaviour
     //==========================
     //CARRY OBJECT
     //==========================
-    private void CarryObject(GameObject hitObject)
+    public void CarryObject(GameObject hitObject)
     {
 
         if (hitObject.transform.parent != null && !(hitObject.transform.parent.name.Equals(playerHoldingPosition.name)) && !(hitObject.transform.parent.tag.Equals("Untagged")))
@@ -93,8 +93,9 @@ public class PlayerSight : MonoBehaviour
     //==========================
     //DROP OBJECT
     //==========================
-    private void DropObject(GameObject hitObject)
+    public static void DropObject(GameObject hitObject)
     {
+        print("PSS says DROPPING");
         if (hitObject.transform.parent != null && !(hitObject.transform.parent.name.Equals(playerHoldingPosition.name)))
         {
             hitObject = hitObject.transform.parent.gameObject;
@@ -110,7 +111,7 @@ public class PlayerSight : MonoBehaviour
     //==========================
     //THROW OBJECT
     //==========================
-    private void ThrowObject(GameObject hitObject, RaycastHit hit)
+    public void ThrowObject(GameObject hitObject, RaycastHit hit)
     {
         if (hitObject.transform.parent != null && (!(hitObject.transform.parent.name.Equals(playerHoldingPosition.name)) && !(hitObject.transform.parent.name.Equals("GravPos"))))
         {
