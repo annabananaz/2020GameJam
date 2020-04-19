@@ -10,11 +10,16 @@ public class PlayerControl : MonoBehaviour
 
     private Rigidbody rb;
     private bool canJump;
+    private bool isCrouching;
+    private float playerHalfSpeed;
+    private float playerOldSpeed;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        playerOldSpeed = playerBaseSpeed;
+        playerHalfSpeed = (playerBaseSpeed / 2);
     }
 
     // Update is called once per frame
@@ -34,6 +39,20 @@ public class PlayerControl : MonoBehaviour
         {
             canJump = false;
             rb.velocity = new Vector3(0, (playerBaseJump * 2) * playerBaseJump * Time.deltaTime, 0);
+        }
+
+        // CROUCHING
+        if (Input.GetKey(KeyCode.LeftControl) && !isCrouching)
+        {
+            Camera.main.transform.localPosition = new Vector3(0.0f, -0.25f, 0.0f);
+            playerBaseSpeed = playerHalfSpeed;
+            isCrouching = true;
+        }
+        else if (!Input.GetKey(KeyCode.LeftControl) && isCrouching)
+        {
+            Camera.main.transform.localPosition = new Vector3(0.0f, 0.5f, 0.0f);
+            playerBaseSpeed = playerOldSpeed;
+            isCrouching = false;
         }
     }
 
